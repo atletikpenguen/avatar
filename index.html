@@ -277,17 +277,55 @@
 
                         <!-- Jersey Body (football uniform style) -->
                         <g id="jersey-group">
-                            <!-- Main jersey body - more athletic shape -->
-                            <path id="jersey-path" d="M 130 280 L 110 310 L 110 450 L 180 450 L 180 390 L 220 390 L 220 500 L 380 500 L 380 390 L 320 390 L 320 450 L 390 450 L 390 310 L 370 280 L 350 280 L 350 340 L 330 350 L 320 310 L 280 290 L 220 290 L 180 310 L 170 350 L 150 340 L 150 280 Z" fill="#FF0000"/>
+                            <!-- Main jersey body - athletic shape with proper shoulders -->
+                            <path id="jersey-path" d="M 150 280 L 140 300 L 140 380 L 180 380 L 180 290 L 200 290 L 200 380 L 220 380 L 220 290 L 250 285 L 280 290 L 280 380 L 300 380 L 300 290 L 320 380 L 360 380 L 360 300 L 350 280 L 330 285 L 315 310 L 300 290 L 280 285 L 250 280 L 220 285 L 200 290 L 185 310 L 170 285 Z" fill="#FF0000"/>
 
                             <!-- Jersey shading overlay -->
-                            <path d="M 130 280 L 110 310 L 110 450 L 180 450 L 180 390 L 220 390 L 220 500 L 380 500 L 380 390 L 320 390 L 320 450 L 390 450 L 390 310 L 370 280 L 350 280 L 350 340 L 330 350 L 320 310 L 280 290 L 220 290 L 180 310 L 170 350 L 150 340 L 150 280 Z" fill="url(#jerseyShading)" opacity="0.5"/>
+                            <path d="M 150 280 L 140 300 L 140 380 L 180 380 L 180 290 L 200 290 L 200 380 L 220 380 L 220 290 L 250 285 L 280 290 L 280 380 L 300 380 L 300 290 L 320 380 L 360 380 L 360 300 L 350 280 L 330 285 L 315 310 L 300 290 L 280 285 L 250 280 L 220 285 L 200 290 L 185 310 L 170 285 Z" fill="url(#jerseyShading)" opacity="0.4"/>
 
                             <!-- Collar V-neck -->
-                            <path d="M 230 295 L 250 330 L 270 295 Z" fill="#FFF" opacity="0.6"/>
+                            <path d="M 235 285 L 250 310 L 265 285" fill="#FFF" opacity="0.6"/>
+
+                            <!-- Jersey sleeves detail -->
+                            <path d="M 150 280 L 170 285 L 165 305 L 145 295 Z" fill="#000" opacity="0.15"/>
+                            <path d="M 350 280 L 330 285 L 335 305 L 355 295 Z" fill="#000" opacity="0.15"/>
 
                             <!-- Jersey number -->
-                            <text id="jersey-number" x="250" y="380" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="#FFFFFF" text-anchor="middle" stroke="#000" stroke-width="2">10</text>
+                            <text id="jersey-number" x="250" y="345" font-family="Arial, sans-serif" font-size="50" font-weight="bold" fill="#FFFFFF" text-anchor="middle" stroke="#000" stroke-width="2">10</text>
+                        </g>
+
+                        <!-- Shorts -->
+                        <g id="shorts-group">
+                            <rect x="200" y="375" width="100" height="60" fill="#0a0a0a" rx="5"/>
+                            <!-- Shorts shading -->
+                            <rect x="200" y="375" width="100" height="30" fill="#FFF" opacity="0.1"/>
+                            <!-- Shorts stripe -->
+                            <line x1="245" y1="375" x2="245" y2="435" stroke="#FFF" stroke-width="2" opacity="0.3"/>
+                            <line x1="255" y1="375" x2="255" y2="435" stroke="#FFF" stroke-width="2" opacity="0.3"/>
+                        </g>
+
+                        <!-- Legs -->
+                        <g id="legs-group">
+                            <!-- Left leg -->
+                            <rect x="205" y="435" width="35" height="65" fill="#FFD9B3" rx="8"/>
+                            <!-- Left leg shading -->
+                            <rect x="205" y="435" width="15" height="65" fill="#000" opacity="0.1" rx="8"/>
+
+                            <!-- Right leg -->
+                            <rect x="260" y="435" width="35" height="65" fill="#FFD9B3" rx="8"/>
+                            <!-- Right leg shading -->
+                            <rect x="280" y="435" width="15" height="65" fill="#000" opacity="0.1" rx="8"/>
+
+                            <!-- Socks -->
+                            <rect x="205" y="480" width="35" height="20" fill="#FF0000"/>
+                            <rect x="260" y="480" width="35" height="20" fill="#FF0000"/>
+
+                            <!-- Shoes -->
+                            <ellipse cx="222.5" cy="498" rx="20" ry="8" fill="#1a1a1a"/>
+                            <ellipse cx="277.5" cy="498" rx="20" ry="8" fill="#1a1a1a"/>
+                            <!-- Shoe highlights -->
+                            <ellipse cx="218" cy="497" rx="6" ry="3" fill="#FFF" opacity="0.3"/>
+                            <ellipse cx="273" cy="497" rx="6" ry="3" fill="#FFF" opacity="0.3"/>
                         </g>
 
                         <!-- Neck -->
@@ -584,15 +622,27 @@
                     `;
                     break;
                 case 'long':
-                    // Uzun saç - daha detaylı ve akıcı
+                    // Uzun saç - daha düzgün ve akıcı
                     hairSVG = `
-                        <path d="M 185 175 Q 185 125, 250 120 Q 315 125, 315 175 L 315 200 Q 310 145, 250 140 Q 190 145, 185 200 Z" fill="${color}"/>
-                        <path d="M 185 200 Q 180 240, 175 280 L 165 280 Q 170 235, 183 200 Z" fill="${color}"/>
-                        <path d="M 315 200 Q 320 240, 325 280 L 335 280 Q 330 235, 317 200 Z" fill="${color}"/>
-                        <!-- Hair highlights -->
-                        <path d="M 180 220 Q 175 240, 172 260" stroke="${darkerColor}" stroke-width="3" fill="none" opacity="0.3"/>
-                        <path d="M 320 220 Q 325 240, 328 260" stroke="${darkerColor}" stroke-width="3" fill="none" opacity="0.3"/>
-                        <ellipse cx="250" cy="140" rx="40" ry="15" fill="${darkerColor}" opacity="0.2"/>
+                        <!-- Top hair -->
+                        <path d="M 185 175 Q 185 125, 250 120 Q 315 125, 315 175 L 315 195 Q 310 140, 250 135 Q 190 140, 185 195 Z" fill="${color}"/>
+
+                        <!-- Left side hair flowing down -->
+                        <path d="M 185 175 Q 175 190, 170 210 Q 165 235, 168 260 L 175 258 Q 173 235, 178 210 Q 182 190, 188 175 Z" fill="${color}"/>
+                        <path d="M 168 260 Q 165 275, 165 290 L 172 288 Q 172 275, 175 258 Z" fill="${color}"/>
+
+                        <!-- Right side hair flowing down -->
+                        <path d="M 315 175 Q 325 190, 330 210 Q 335 235, 332 260 L 325 258 Q 327 235, 322 210 Q 318 190, 312 175 Z" fill="${color}"/>
+                        <path d="M 332 260 Q 335 275, 335 290 L 328 288 Q 328 275, 325 258 Z" fill="${color}"/>
+
+                        <!-- Hair highlights and depth -->
+                        <ellipse cx="250" cy="135" rx="45" ry="15" fill="${darkerColor}" opacity="0.2"/>
+                        <path d="M 173 220 Q 170 240, 168 260" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.4"/>
+                        <path d="M 327 220 Q 330 240, 332 260" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.4"/>
+
+                        <!-- Hair strands for texture -->
+                        <path d="M 178 200 Q 175 220, 173 240" stroke="${color}" stroke-width="3" fill="none" opacity="0.6"/>
+                        <path d="M 322 200 Q 325 220, 327 240" stroke="${color}" stroke-width="3" fill="none" opacity="0.6"/>
                     `;
                     break;
                 case 'curly':
@@ -691,35 +741,52 @@
 
                 switch(type) {
                     case 'light':
-                        // Hafif sakal - çene etrafında daha detaylı
+                        // Hafif sakal - çene ve ağız çevresinde ince
                         beardSVG = `
-                            <path d="M 210 235 Q 210 252, 218 260 Q 230 267, 250 267 Q 270 267, 282 260 Q 290 252, 290 235"
-                                  fill="${color}" opacity="0.5" stroke="${color}" stroke-width="1"/>
-                            <path d="M 215 240 L 220 245 M 230 248 L 235 253 M 265 253 L 270 248 M 280 245 L 285 240"
-                                  stroke="${darkerColor}" stroke-width="1.5" opacity="0.4"/>
+                            <!-- Mustache area -->
+                            <path d="M 230 237 Q 240 240, 250 240 Q 260 240, 270 237" fill="${color}" opacity="0.4"/>
+                            <!-- Chin area -->
+                            <ellipse cx="250" cy="258" rx="30" ry="18" fill="${color}" opacity="0.4"/>
+                            <!-- Jawline -->
+                            <path d="M 205 230 Q 208 245, 215 255" stroke="${color}" stroke-width="2" opacity="0.3"/>
+                            <path d="M 295 230 Q 292 245, 285 255" stroke="${color}" stroke-width="2" opacity="0.3"/>
                         `;
                         break;
                     case 'full':
-                        // Dolgun sakal - daha hacimli ve detaylı
+                        // Dolgun sakal - yüzü daha iyi kapsar
                         beardSVG = `
-                            <ellipse cx="250" cy="245" rx="55" ry="35" fill="${color}"/>
-                            <path d="M 195 220 Q 190 238, 195 250 L 200 245 Q 198 232, 200 220 Z" fill="${color}"/>
-                            <path d="M 305 220 Q 310 238, 305 250 L 300 245 Q 302 232, 300 220 Z" fill="${color}"/>
-                            <!-- Beard texture -->
-                            <ellipse cx="250" cy="245" rx="45" ry="28" fill="${darkerColor}" opacity="0.2"/>
-                            <path d="M 220 245 Q 230 250, 240 245" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.3"/>
-                            <path d="M 260 245 Q 270 250, 280 245" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.3"/>
+                            <!-- Main beard body -->
+                            <ellipse cx="250" cy="255" rx="50" ry="30" fill="${color}"/>
+
+                            <!-- Mustache -->
+                            <ellipse cx="235" cy="238" rx="18" ry="6" fill="${color}"/>
+                            <ellipse cx="265" cy="238" rx="18" ry="6" fill="${color}"/>
+
+                            <!-- Side burns connecting to beard -->
+                            <path d="M 195 215 Q 190 230, 195 245 Q 200 255, 210 260" fill="${color}"/>
+                            <path d="M 305 215 Q 310 230, 305 245 Q 300 255, 290 260" fill="${color}"/>
+
+                            <!-- Beard texture and depth -->
+                            <ellipse cx="250" cy="255" rx="42" ry="24" fill="${darkerColor}" opacity="0.25"/>
+                            <path d="M 220 250 Q 235 255, 250 255 Q 265 255, 280 250" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.3"/>
                         `;
                         break;
                     case 'goatee':
-                        // Keçi sakalı - daha tanımlı
+                        // Keçi sakalı - ağız altı ve çene
                         beardSVG = `
-                            <ellipse cx="250" cy="252" rx="28" ry="25" fill="${color}"/>
-                            <path d="M 228 235 Q 228 242, 233 248 Q 240 252, 250 252 Q 260 252, 267 248 Q 272 242, 272 235"
-                                  fill="${color}" stroke="${color}" stroke-width="1"/>
-                            <!-- Goatee definition -->
-                            <ellipse cx="250" cy="252" rx="20" ry="18" fill="${darkerColor}" opacity="0.2"/>
-                            <path d="M 240 248 Q 250 250, 260 248" stroke="${darkerColor}" stroke-width="1.5" fill="none" opacity="0.4"/>
+                            <!-- Soul patch under lip -->
+                            <ellipse cx="250" cy="250" rx="8" ry="6" fill="${color}"/>
+
+                            <!-- Main goatee on chin -->
+                            <ellipse cx="250" cy="260" rx="22" ry="20" fill="${color}"/>
+
+                            <!-- Mustache -->
+                            <ellipse cx="235" cy="238" rx="16" ry="5" fill="${color}"/>
+                            <ellipse cx="265" cy="238" rx="16" ry="5" fill="${color}"/>
+
+                            <!-- Goatee shading -->
+                            <ellipse cx="250" cy="260" rx="16" ry="15" fill="${darkerColor}" opacity="0.25"/>
+                            <path d="M 240 255 Q 250 258, 260 255" stroke="${darkerColor}" stroke-width="1.5" fill="none" opacity="0.3"/>
                         `;
                         break;
                 }
