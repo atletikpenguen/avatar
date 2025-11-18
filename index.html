@@ -46,7 +46,7 @@
 
         .main-content {
             display: grid;
-            grid-template-columns: 400px 1fr;
+            grid-template-columns: 450px 1fr;
             gap: 30px;
             padding: 30px;
         }
@@ -68,6 +68,7 @@
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             max-width: 100%;
+            height: auto;
         }
 
         .download-btn {
@@ -100,6 +101,11 @@
             border-radius: 15px;
             padding: 20px;
             border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .option-group.hidden {
+            display: none;
         }
 
         .option-group h3 {
@@ -236,72 +242,126 @@
         <div class="main-content">
             <div class="avatar-preview">
                 <div class="avatar-container">
-                    <svg id="avatar-svg" width="360" height="360" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Background -->
-                        <rect id="bg-rect" width="360" height="360" fill="#87CEEB"/>
+                    <svg id="avatar-svg" width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Gradient definitions for better quality -->
+                            <radialGradient id="faceGradient" cx="50%" cy="40%" r="50%">
+                                <stop offset="0%" style="stop-color:#FFE4C4;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#FFD9B3;stop-opacity:1" />
+                            </radialGradient>
 
-                        <!-- Jersey -->
+                            <linearGradient id="jerseyShading" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.2" />
+                                <stop offset="50%" style="stop-color:#000000;stop-opacity:0" />
+                                <stop offset="100%" style="stop-color:#000000;stop-opacity:0.1" />
+                            </linearGradient>
+
+                            <!-- Jersey patterns -->
+                            <pattern id="stripe-pattern-vertical" x="0" y="0" width="30" height="100%" patternUnits="userSpaceOnUse">
+                                <rect width="15" height="100%" fill="#FF0000"/>
+                                <rect x="15" width="15" height="100%" fill="#0000FF"/>
+                            </pattern>
+                            <pattern id="stripe-pattern-horizontal" x="0" y="0" width="100%" height="30" patternUnits="userSpaceOnUse">
+                                <rect width="100%" height="15" fill="#FF0000"/>
+                                <rect y="15" width="100%" height="15" fill="#0000FF"/>
+                            </pattern>
+
+                            <!-- Shadow filters -->
+                            <filter id="shadow">
+                                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+                            </filter>
+                        </defs>
+
+                        <!-- Background -->
+                        <rect id="bg-rect" width="500" height="500" fill="#87CEEB"/>
+
+                        <!-- Jersey Body (football uniform style) -->
                         <g id="jersey-group">
-                            <defs>
-                                <pattern id="stripe-pattern-vertical" x="0" y="0" width="20" height="100%" patternUnits="userSpaceOnUse">
-                                    <rect width="10" height="100%" fill="#FF0000"/>
-                                    <rect x="10" width="10" height="100%" fill="#0000FF"/>
-                                </pattern>
-                                <pattern id="stripe-pattern-horizontal" x="0" y="0" width="100%" height="20" patternUnits="userSpaceOnUse">
-                                    <rect width="100%" height="10" fill="#FF0000"/>
-                                    <rect y="10" width="100%" height="10" fill="#0000FF"/>
-                                </pattern>
-                            </defs>
-                            <!-- Jersey body -->
-                            <path id="jersey-path" d="M 100 200 L 80 240 L 80 320 L 140 320 L 140 260 L 180 260 L 180 340 L 280 340 L 280 260 L 220 260 L 220 320 L 280 320 L 280 240 L 260 200 Z" fill="#FF0000"/>
-                            <!-- Collar -->
-                            <ellipse cx="180" cy="205" rx="25" ry="15" fill="#FFF" opacity="0.3"/>
+                            <!-- Main jersey body - more athletic shape -->
+                            <path id="jersey-path" d="M 130 280 L 110 310 L 110 450 L 180 450 L 180 390 L 220 390 L 220 500 L 380 500 L 380 390 L 320 390 L 320 450 L 390 450 L 390 310 L 370 280 L 350 280 L 350 340 L 330 350 L 320 310 L 280 290 L 220 290 L 180 310 L 170 350 L 150 340 L 150 280 Z" fill="#FF0000"/>
+
+                            <!-- Jersey shading overlay -->
+                            <path d="M 130 280 L 110 310 L 110 450 L 180 450 L 180 390 L 220 390 L 220 500 L 380 500 L 380 390 L 320 390 L 320 450 L 390 450 L 390 310 L 370 280 L 350 280 L 350 340 L 330 350 L 320 310 L 280 290 L 220 290 L 180 310 L 170 350 L 150 340 L 150 280 Z" fill="url(#jerseyShading)" opacity="0.5"/>
+
+                            <!-- Collar V-neck -->
+                            <path d="M 230 295 L 250 330 L 270 295 Z" fill="#FFF" opacity="0.6"/>
+
+                            <!-- Jersey number -->
+                            <text id="jersey-number" x="250" y="380" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="#FFFFFF" text-anchor="middle" stroke="#000" stroke-width="2">10</text>
                         </g>
 
                         <!-- Neck -->
-                        <rect id="neck" x="165" y="200" width="30" height="25" fill="#FFD9B3" rx="5"/>
+                        <ellipse id="neck" cx="250" cy="280" rx="22" ry="18" fill="url(#faceGradient)"/>
 
                         <!-- Head -->
-                        <ellipse id="head" cx="180" cy="160" rx="50" ry="60" fill="#FFD9B3"/>
+                        <ellipse id="head" cx="250" cy="200" rx="65" ry="75" fill="url(#faceGradient)" filter="url(#shadow)"/>
 
-                        <!-- Ears -->
-                        <ellipse id="ear-left" cx="130" cy="160" rx="8" ry="12" fill="#FFD9B3"/>
-                        <ellipse id="ear-right" cx="230" cy="160" rx="8" ry="12" fill="#FFD9B3"/>
+                        <!-- Ears with shadow -->
+                        <ellipse id="ear-left" cx="185" cy="200" rx="10" ry="15" fill="#FFD9B3"/>
+                        <ellipse cx="186" cy="200" rx="5" ry="8" fill="#FFB380"/>
+                        <ellipse id="ear-right" cx="315" cy="200" rx="10" ry="15" fill="#FFD9B3"/>
+                        <ellipse cx="314" cy="200" rx="5" ry="8" fill="#FFB380"/>
 
-                        <!-- Hair background (to cover top of head) -->
+                        <!-- Hair group -->
                         <g id="hair-group"></g>
 
-                        <!-- Eyes -->
+                        <!-- Face features -->
+                        <!-- Eyebrows -->
+                        <g id="eyebrows-group">
+                            <path d="M 215 185 Q 225 182, 235 185" stroke="#6B4423" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <path d="M 265 185 Q 275 182, 285 185" stroke="#6B4423" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        </g>
+
+                        <!-- Eyes with more detail -->
                         <g id="eyes-group">
-                            <ellipse cx="160" cy="155" rx="8" ry="12" fill="white"/>
-                            <ellipse cx="200" cy="155" rx="8" ry="12" fill="white"/>
-                            <circle cx="160" cy="157" r="5" fill="#2C1810"/>
-                            <circle cx="200" cy="157" r="5" fill="#2C1810"/>
+                            <!-- Left eye -->
+                            <ellipse cx="225" cy="200" rx="12" ry="16" fill="white"/>
+                            <circle cx="225" cy="202" r="8" fill="#6B4423"/>
+                            <circle cx="225" cy="202" r="5" fill="#000000"/>
+                            <circle cx="227" cy="200" r="2" fill="white"/>
+
+                            <!-- Right eye -->
+                            <ellipse cx="275" cy="200" rx="12" ry="16" fill="white"/>
+                            <circle cx="275" cy="202" r="8" fill="#6B4423"/>
+                            <circle cx="275" cy="202" r="5" fill="#000000"/>
+                            <circle cx="277" cy="200" r="2" fill="white"/>
                         </g>
 
                         <!-- Eyelashes (hidden by default, shown for female) -->
                         <g id="eyelashes-group" style="display: none;">
-                            <path d="M 152 148 Q 150 145, 148 148" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M 160 145 Q 160 142, 160 145" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M 168 148 Q 170 145, 172 148" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M 192 148 Q 190 145, 188 148" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M 200 145 Q 200 142, 200 145" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M 208 148 Q 210 145, 212 148" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <!-- Left eye lashes -->
+                            <path d="M 213 192 Q 210 188, 212 192" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 220 189 Q 220 185, 220 189" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 230 189 Q 230 185, 230 189" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 237 192 Q 240 188, 238 192" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+                            <!-- Right eye lashes -->
+                            <path d="M 263 192 Q 260 188, 262 192" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 270 189 Q 270 185, 270 189" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 280 189 Q 280 185, 280 189" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 287 192 Q 290 188, 288 192" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
                         </g>
 
                         <!-- Glasses (hidden by default) -->
                         <g id="glasses-group" style="display: none;"></g>
 
-                        <!-- Nose -->
-                        <path id="nose" d="M 180 165 L 176 175 L 184 175 Z" fill="#FFB380"/>
+                        <!-- Nose with shading -->
+                        <path id="nose" d="M 250 210 L 245 225 L 255 225 Z" fill="#FFB380"/>
+                        <ellipse cx="246" cy="226" rx="3" ry="2" fill="#E39A6D" opacity="0.6"/>
+                        <ellipse cx="254" cy="226" rx="3" ry="2" fill="#E39A6D" opacity="0.6"/>
 
-                        <!-- Mouth -->
-                        <path id="mouth" d="M 165 185 Q 180 195, 195 185" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Mouth with better detail -->
+                        <path id="mouth" d="M 230 245 Q 250 255, 270 245" fill="none" stroke="#8B4513" stroke-width="3" stroke-linecap="round"/>
+                        <path id="mouth-inner" d="M 235 247 Q 250 252, 265 247" fill="#C76868" stroke="none"/>
+
+                        <!-- Cheek blush -->
+                        <ellipse cx="205" cy="215" rx="12" ry="8" fill="#FFB6C1" opacity="0.3"/>
+                        <ellipse cx="295" cy="215" rx="12" ry="8" fill="#FFB6C1" opacity="0.3"/>
 
                         <!-- Beard (hidden by default) -->
                         <g id="beard-group" style="display: none;"></g>
                     </svg>
-                    <button class="download-btn" onclick="downloadAvatar()">📥 Profil Fotoğrafını İndir</button>
+                    <button class="download-btn" onclick="downloadAvatar()">📥 Profil Fotoğrafını İndir (HD)</button>
                 </div>
             </div>
 
@@ -344,8 +404,8 @@
                     </div>
                 </div>
 
-                <!-- Beard -->
-                <div class="option-group">
+                <!-- Beard (will be hidden for female) -->
+                <div class="option-group" id="beard-option-group">
                     <h3>Sakal</h3>
                     <div class="option-buttons">
                         <button class="option-btn active" onclick="setBeard('none')">Yok</button>
@@ -446,33 +506,51 @@
             avatarConfig.gender = gender;
             setActiveButton(event.target);
             updateGender();
+            updateBeardVisibility();
         }
 
         function updateGender() {
             const head = document.getElementById('head');
             const nose = document.getElementById('nose');
             const mouth = document.getElementById('mouth');
+            const mouthInner = document.getElementById('mouth-inner');
             const eyelashes = document.getElementById('eyelashes-group');
             const neck = document.getElementById('neck');
 
             if (avatarConfig.gender === 'female') {
                 // Kadın için daha küçük ve yumuşak hatlar
-                head.setAttribute('rx', '48');
-                head.setAttribute('ry', '58');
-                nose.setAttribute('d', 'M 180 168 L 177 173 L 183 173 Z');
-                mouth.setAttribute('d', 'M 168 185 Q 180 192, 192 185');
+                head.setAttribute('rx', '62');
+                head.setAttribute('ry', '73');
+                nose.setAttribute('d', 'M 250 215 L 247 222 L 253 222 Z');
+                mouth.setAttribute('d', 'M 235 245 Q 250 252, 265 245');
+                mouthInner.setAttribute('d', 'M 238 247 Q 250 251, 262 247');
                 eyelashes.style.display = 'block';
-                neck.setAttribute('width', '26');
-                neck.setAttribute('x', '167');
+                neck.setAttribute('rx', '20');
+                neck.setAttribute('ry', '16');
             } else {
                 // Erkek için daha büyük ve belirgin hatlar
-                head.setAttribute('rx', '50');
-                head.setAttribute('ry', '60');
-                nose.setAttribute('d', 'M 180 165 L 176 175 L 184 175 Z');
-                mouth.setAttribute('d', 'M 165 185 Q 180 195, 195 185');
+                head.setAttribute('rx', '65');
+                head.setAttribute('ry', '75');
+                nose.setAttribute('d', 'M 250 210 L 245 225 L 255 225 Z');
+                mouth.setAttribute('d', 'M 230 245 Q 250 255, 270 245');
+                mouthInner.setAttribute('d', 'M 235 247 Q 250 252, 265 247');
                 eyelashes.style.display = 'none';
-                neck.setAttribute('width', '30');
-                neck.setAttribute('x', '165');
+                neck.setAttribute('rx', '22');
+                neck.setAttribute('ry', '18');
+            }
+        }
+
+        function updateBeardVisibility() {
+            const beardGroup = document.getElementById('beard-option-group');
+            if (avatarConfig.gender === 'female') {
+                beardGroup.classList.add('hidden');
+                // Kadın seçildiğinde sakalı otomatik kaldır
+                if (avatarConfig.beard !== 'none') {
+                    avatarConfig.beard = 'none';
+                    updateBeard();
+                }
+            } else {
+                beardGroup.classList.remove('hidden');
             }
         }
 
@@ -488,50 +566,97 @@
             const color = avatarConfig.hairColor;
             const style = avatarConfig.hairStyle;
 
+            // Create darker shade for hair depth
+            const darkerColor = shadeColor(color, -20);
+
             let hairSVG = '';
 
             switch(style) {
                 case 'short':
-                    // Kısa saç - kafanın üstünü ve yanlarını kaplar
+                    // Kısa saç - daha detaylı
                     hairSVG = `
-                        <path d="M 130 140 Q 130 95, 180 95 Q 230 95, 230 140 L 230 155 Q 225 110, 180 110 Q 135 110, 130 155 Z" fill="${color}"/>
+                        <path d="M 185 175 Q 185 125, 250 120 Q 315 125, 315 175 L 315 195 Q 310 140, 250 135 Q 190 140, 185 195 Z" fill="${color}"/>
+                        <path d="M 185 175 Q 185 130, 250 125 Q 315 130, 315 175" fill="${darkerColor}" opacity="0.3"/>
+                        <!-- Hair texture lines -->
+                        <path d="M 200 150 Q 210 145, 220 150" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.4"/>
+                        <path d="M 240 140 Q 250 135, 260 140" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.4"/>
+                        <path d="M 280 150 Q 290 145, 300 150" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.4"/>
                     `;
                     break;
                 case 'long':
-                    // Uzun saç - omuza kadar iner
+                    // Uzun saç - daha detaylı ve akıcı
                     hairSVG = `
-                        <path d="M 130 140 Q 130 95, 180 95 Q 230 95, 230 140 L 230 160 Q 225 110, 180 110 Q 135 110, 130 160 Z" fill="${color}"/>
-                        <path d="M 130 160 Q 125 190, 120 210 L 115 210 Q 120 180, 128 160 Z" fill="${color}"/>
-                        <path d="M 230 160 Q 235 190, 240 210 L 245 210 Q 240 180, 232 160 Z" fill="${color}"/>
+                        <path d="M 185 175 Q 185 125, 250 120 Q 315 125, 315 175 L 315 200 Q 310 145, 250 140 Q 190 145, 185 200 Z" fill="${color}"/>
+                        <path d="M 185 200 Q 180 240, 175 280 L 165 280 Q 170 235, 183 200 Z" fill="${color}"/>
+                        <path d="M 315 200 Q 320 240, 325 280 L 335 280 Q 330 235, 317 200 Z" fill="${color}"/>
+                        <!-- Hair highlights -->
+                        <path d="M 180 220 Q 175 240, 172 260" stroke="${darkerColor}" stroke-width="3" fill="none" opacity="0.3"/>
+                        <path d="M 320 220 Q 325 240, 328 260" stroke="${darkerColor}" stroke-width="3" fill="none" opacity="0.3"/>
+                        <ellipse cx="250" cy="140" rx="40" ry="15" fill="${darkerColor}" opacity="0.2"/>
                     `;
                     break;
                 case 'curly':
-                    // Kıvırcık saç - daireler halinde ama düzgün hizalanmış
+                    // Kıvırcık saç - daha hacimli
                     hairSVG = `
-                        <ellipse cx="145" cy="115" rx="18" ry="20" fill="${color}"/>
-                        <ellipse cx="165" cy="105" rx="20" ry="22" fill="${color}"/>
-                        <ellipse cx="180" cy="100" rx="22" ry="24" fill="${color}"/>
-                        <ellipse cx="195" cy="105" rx="20" ry="22" fill="${color}"/>
-                        <ellipse cx="215" cy="115" rx="18" ry="20" fill="${color}"/>
-                        <ellipse cx="135" cy="135" rx="16" ry="18" fill="${color}"/>
-                        <ellipse cx="225" cy="135" rx="16" ry="18" fill="${color}"/>
+                        <ellipse cx="200" cy="145" rx="24" ry="26" fill="${color}"/>
+                        <ellipse cx="230" cy="135" rx="26" ry="28" fill="${color}"/>
+                        <ellipse cx="250" cy="130" rx="28" ry="30" fill="${color}"/>
+                        <ellipse cx="270" cy="135" rx="26" ry="28" fill="${color}"/>
+                        <ellipse cx="300" cy="145" rx="24" ry="26" fill="${color}"/>
+                        <ellipse cx="190" cy="170" rx="20" ry="22" fill="${color}"/>
+                        <ellipse cx="310" cy="170" rx="20" ry="22" fill="${color}"/>
+                        <!-- Curl highlights -->
+                        <ellipse cx="250" cy="130" rx="15" ry="18" fill="${darkerColor}" opacity="0.3"/>
+                        <ellipse cx="230" cy="135" rx="13" ry="15" fill="${darkerColor}" opacity="0.3"/>
+                        <ellipse cx="270" cy="135" rx="13" ry="15" fill="${darkerColor}" opacity="0.3"/>
                     `;
                     break;
                 case 'bald':
-                    // Kel - saç yok
-                    hairSVG = '';
+                    // Kel - sadece kafanın parlaklığını artır
+                    hairSVG = `
+                        <ellipse cx="250" cy="155" rx="50" ry="30" fill="#FFF" opacity="0.1"/>
+                    `;
                     break;
                 case 'ponytail':
-                    // Topuz - arkada toplu saç
+                    // Topuz - daha belirgin
                     hairSVG = `
-                        <path d="M 130 140 Q 130 95, 180 95 Q 230 95, 230 140 L 230 155 Q 225 110, 180 110 Q 135 110, 130 155 Z" fill="${color}"/>
-                        <ellipse cx="180" cy="95" rx="25" ry="30" fill="${color}"/>
-                        <ellipse cx="180" cy="85" rx="18" ry="20" fill="${color}"/>
+                        <path d="M 185 175 Q 185 125, 250 122 Q 315 125, 315 175 L 315 195 Q 310 142, 250 137 Q 190 142, 185 195 Z" fill="${color}"/>
+                        <ellipse cx="250" cy="120" rx="32" ry="38" fill="${color}"/>
+                        <ellipse cx="250" cy="105" rx="24" ry="26" fill="${color}"/>
+                        <!-- Ponytail tie -->
+                        <ellipse cx="250" cy="125" rx="8" ry="6" fill="#333"/>
+                        <!-- Highlights -->
+                        <ellipse cx="250" cy="110" rx="12" ry="15" fill="${darkerColor}" opacity="0.3"/>
                     `;
                     break;
             }
 
             hairGroup.innerHTML = hairSVG;
+        }
+
+        // Helper function to darken/lighten color
+        function shadeColor(color, percent) {
+            let R = parseInt(color.substring(1,3),16);
+            let G = parseInt(color.substring(3,5),16);
+            let B = parseInt(color.substring(5,7),16);
+
+            R = parseInt(R * (100 + percent) / 100);
+            G = parseInt(G * (100 + percent) / 100);
+            B = parseInt(B * (100 + percent) / 100);
+
+            R = (R<255)?R:255;
+            G = (G<255)?G:255;
+            B = (B<255)?B:255;
+
+            R = Math.round(R);
+            G = Math.round(G);
+            B = Math.round(B);
+
+            let RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+            let GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+            let BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+
+            return "#"+RR+GG+BB;
         }
 
         // Hair Color
@@ -542,7 +667,7 @@
                 setActiveButton(event.target);
             }
             updateHair();
-            updateBeard(); // Sakal rengi saç rengiyle aynı olduğu için güncelle
+            updateBeard();
         }
 
         // Beard
@@ -556,6 +681,7 @@
             const beardGroup = document.getElementById('beard-group');
             const color = avatarConfig.hairColor;
             const type = avatarConfig.beard;
+            const darkerColor = shadeColor(color, -20);
 
             if(type === 'none') {
                 beardGroup.style.display = 'none';
@@ -565,26 +691,35 @@
 
                 switch(type) {
                     case 'light':
-                        // Hafif sakal - çene etrafında ince
+                        // Hafif sakal - çene etrafında daha detaylı
                         beardSVG = `
-                            <path d="M 150 190 Q 150 205, 155 210 Q 165 215, 180 215 Q 195 215, 205 210 Q 210 205, 210 190"
+                            <path d="M 210 235 Q 210 252, 218 260 Q 230 267, 250 267 Q 270 267, 282 260 Q 290 252, 290 235"
                                   fill="${color}" opacity="0.5" stroke="${color}" stroke-width="1"/>
+                            <path d="M 215 240 L 220 245 M 230 248 L 235 253 M 265 253 L 270 248 M 280 245 L 285 240"
+                                  stroke="${darkerColor}" stroke-width="1.5" opacity="0.4"/>
                         `;
                         break;
                     case 'full':
-                        // Dolgun sakal - çene ve yanakları kaplar
+                        // Dolgun sakal - daha hacimli ve detaylı
                         beardSVG = `
-                            <ellipse cx="180" cy="195" rx="45" ry="28" fill="${color}"/>
-                            <path d="M 135 170 Q 130 185, 135 195 L 140 190 Q 138 180, 140 170 Z" fill="${color}"/>
-                            <path d="M 225 170 Q 230 185, 225 195 L 220 190 Q 222 180, 220 170 Z" fill="${color}"/>
+                            <ellipse cx="250" cy="245" rx="55" ry="35" fill="${color}"/>
+                            <path d="M 195 220 Q 190 238, 195 250 L 200 245 Q 198 232, 200 220 Z" fill="${color}"/>
+                            <path d="M 305 220 Q 310 238, 305 250 L 300 245 Q 302 232, 300 220 Z" fill="${color}"/>
+                            <!-- Beard texture -->
+                            <ellipse cx="250" cy="245" rx="45" ry="28" fill="${darkerColor}" opacity="0.2"/>
+                            <path d="M 220 245 Q 230 250, 240 245" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.3"/>
+                            <path d="M 260 245 Q 270 250, 280 245" stroke="${darkerColor}" stroke-width="2" fill="none" opacity="0.3"/>
                         `;
                         break;
                     case 'goatee':
-                        // Keçi sakalı - sadece çene altı
+                        // Keçi sakalı - daha tanımlı
                         beardSVG = `
-                            <ellipse cx="180" cy="200" rx="22" ry="20" fill="${color}"/>
-                            <path d="M 165 190 Q 165 195, 170 198 Q 175 200, 180 200 Q 185 200, 190 198 Q 195 195, 195 190"
+                            <ellipse cx="250" cy="252" rx="28" ry="25" fill="${color}"/>
+                            <path d="M 228 235 Q 228 242, 233 248 Q 240 252, 250 252 Q 260 252, 267 248 Q 272 242, 272 235"
                                   fill="${color}" stroke="${color}" stroke-width="1"/>
+                            <!-- Goatee definition -->
+                            <ellipse cx="250" cy="252" rx="20" ry="18" fill="${darkerColor}" opacity="0.2"/>
+                            <path d="M 240 248 Q 250 250, 260 248" stroke="${darkerColor}" stroke-width="1.5" fill="none" opacity="0.4"/>
                         `;
                         break;
                 }
@@ -612,35 +747,41 @@
 
                 switch(type) {
                     case 'regular':
-                        // Normal gözlük - dikdörtgen camlar
                         glassesSVG = `
-                            <rect x="145" y="147" width="30" height="20" fill="none" stroke="#333" stroke-width="3" rx="3"/>
-                            <rect x="185" y="147" width="30" height="20" fill="none" stroke="#333" stroke-width="3" rx="3"/>
-                            <line x1="175" y1="157" x2="185" y2="157" stroke="#333" stroke-width="3"/>
-                            <line x1="145" y1="157" x2="135" y2="155" stroke="#333" stroke-width="2"/>
-                            <line x1="215" y1="157" x2="225" y2="155" stroke="#333" stroke-width="2"/>
+                            <rect x="203" y="192" width="38" height="26" fill="rgba(255,255,255,0.1)" stroke="#333" stroke-width="3" rx="4"/>
+                            <rect x="259" y="192" width="38" height="26" fill="rgba(255,255,255,0.1)" stroke="#333" stroke-width="3" rx="4"/>
+                            <line x1="241" y1="205" x2="259" y2="205" stroke="#333" stroke-width="3"/>
+                            <line x1="203" y1="205" x2="190" y2="203" stroke="#333" stroke-width="2.5"/>
+                            <line x1="297" y1="205" x2="310" y2="203" stroke="#333" stroke-width="2.5"/>
+                            <!-- Glass reflection -->
+                            <path d="M 207 195 L 235 200" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M 263 195 L 291 200" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
                         `;
                         break;
                     case 'round':
-                        // Yuvarlak gözlük
                         glassesSVG = `
-                            <circle cx="160" cy="157" r="14" fill="none" stroke="#333" stroke-width="3"/>
-                            <circle cx="200" cy="157" r="14" fill="none" stroke="#333" stroke-width="3"/>
-                            <line x1="174" y1="157" x2="186" y2="157" stroke="#333" stroke-width="3"/>
-                            <line x1="146" y1="157" x2="136" y2="155" stroke="#333" stroke-width="2"/>
-                            <line x1="214" y1="157" x2="224" y2="155" stroke="#333" stroke-width="2"/>
+                            <circle cx="225" cy="205" r="18" fill="rgba(255,255,255,0.1)" stroke="#333" stroke-width="3"/>
+                            <circle cx="275" cy="205" r="18" fill="rgba(255,255,255,0.1)" stroke="#333" stroke-width="3"/>
+                            <line x1="243" y1="205" x2="257" y2="205" stroke="#333" stroke-width="3"/>
+                            <line x1="207" y1="205" x2="194" y2="203" stroke="#333" stroke-width="2.5"/>
+                            <line x1="293" y1="205" x2="306" y2="203" stroke="#333" stroke-width="2.5"/>
+                            <!-- Glass reflection -->
+                            <path d="M 215 195 Q 220 193, 225 195" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <path d="M 265 195 Q 270 193, 275 195" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
                         `;
                         break;
                     case 'sunglasses':
-                        // Güneş gözlüğü - koyu camlar
                         glassesSVG = `
-                            <rect x="145" y="147" width="30" height="20" fill="#1a1a1a" stroke="#000" stroke-width="3" rx="3" opacity="0.9"/>
-                            <rect x="185" y="147" width="30" height="20" fill="#1a1a1a" stroke="#000" stroke-width="3" rx="3" opacity="0.9"/>
-                            <line x1="175" y1="157" x2="185" y2="157" stroke="#000" stroke-width="3"/>
-                            <line x1="145" y1="157" x2="135" y2="155" stroke="#000" stroke-width="2"/>
-                            <line x1="215" y1="157" x2="225" y2="155" stroke="#000" stroke-width="2"/>
-                            <path d="M 148 150 L 172 154" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M 188 150 L 212 154" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="203" y="192" width="38" height="26" fill="#1a1a1a" stroke="#000" stroke-width="3" rx="4" opacity="0.95"/>
+                            <rect x="259" y="192" width="38" height="26" fill="#1a1a1a" stroke="#000" stroke-width="3" rx="4" opacity="0.95"/>
+                            <line x1="241" y1="205" x2="259" y2="205" stroke="#000" stroke-width="3"/>
+                            <line x1="203" y1="205" x2="190" y2="203" stroke="#000" stroke-width="2.5"/>
+                            <line x1="297" y1="205" x2="310" y2="203" stroke="#000" stroke-width="2.5"/>
+                            <!-- Sunglasses reflection -->
+                            <path d="M 207 195 L 235 202" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M 263 195 L 291 202" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" stroke-linecap="round"/>
+                            <ellipse cx="215" cy="200" rx="6" ry="4" fill="rgba(255,255,255,0.2)"/>
+                            <ellipse cx="265" cy="200" rx="6" ry="4" fill="rgba(255,255,255,0.2)"/>
                         `;
                         break;
                 }
@@ -727,13 +868,14 @@
         // Update entire avatar
         function updateAvatar() {
             updateGender();
+            updateBeardVisibility();
             updateHair();
             updateBeard();
             updateGlasses();
             updateJersey();
         }
 
-        // Download avatar as PNG
+        // Download avatar as PNG in high quality
         function downloadAvatar() {
             const svg = document.getElementById('avatar-svg');
             const svgData = new XMLSerializer().serializeToString(svg);
@@ -741,14 +883,15 @@
             const ctx = canvas.getContext('2d');
             const img = new Image();
 
-            canvas.width = 360;
-            canvas.height = 360;
+            // Higher resolution for better quality
+            canvas.width = 1000;
+            canvas.height = 1000;
 
             img.onload = function() {
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(img, 0, 0, 1000, 1000);
                 const pngFile = canvas.toDataURL('image/png');
                 const downloadLink = document.createElement('a');
-                downloadLink.download = 'futbol-profil-fotografi.png';
+                downloadLink.download = 'futbol-profil-fotografi-hd.png';
                 downloadLink.href = pngFile;
                 downloadLink.click();
             };
