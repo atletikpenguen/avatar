@@ -64,7 +64,7 @@
             text-align: center;
         }
 
-        #avatar-canvas {
+        #avatar-svg {
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             max-width: 100%;
@@ -258,42 +258,48 @@
                             <ellipse cx="180" cy="205" rx="25" ry="15" fill="#FFF" opacity="0.3"/>
                         </g>
 
+                        <!-- Neck -->
+                        <rect id="neck" x="165" y="200" width="30" height="25" fill="#FFD9B3" rx="5"/>
+
                         <!-- Head -->
                         <ellipse id="head" cx="180" cy="160" rx="50" ry="60" fill="#FFD9B3"/>
 
-                        <!-- Hair -->
-                        <g id="hair-group">
-                            <!-- Short hair default -->
-                            <path id="hair-short" d="M 130 140 Q 130 100, 180 100 Q 230 100, 230 140 L 230 160 Q 220 120, 180 120 Q 140 120, 130 160 Z" fill="#4A2511"/>
-                        </g>
-
                         <!-- Ears -->
-                        <ellipse cx="130" cy="160" rx="8" ry="12" fill="#FFD9B3"/>
-                        <ellipse cx="230" cy="160" rx="8" ry="12" fill="#FFD9B3"/>
+                        <ellipse id="ear-left" cx="130" cy="160" rx="8" ry="12" fill="#FFD9B3"/>
+                        <ellipse id="ear-right" cx="230" cy="160" rx="8" ry="12" fill="#FFD9B3"/>
+
+                        <!-- Hair background (to cover top of head) -->
+                        <g id="hair-group"></g>
 
                         <!-- Eyes -->
-                        <ellipse cx="160" cy="155" rx="8" ry="12" fill="white"/>
-                        <ellipse cx="200" cy="155" rx="8" ry="12" fill="white"/>
-                        <circle cx="160" cy="157" r="5" fill="#2C1810"/>
-                        <circle cx="200" cy="157" r="5" fill="#2C1810"/>
+                        <g id="eyes-group">
+                            <ellipse cx="160" cy="155" rx="8" ry="12" fill="white"/>
+                            <ellipse cx="200" cy="155" rx="8" ry="12" fill="white"/>
+                            <circle cx="160" cy="157" r="5" fill="#2C1810"/>
+                            <circle cx="200" cy="157" r="5" fill="#2C1810"/>
+                        </g>
+
+                        <!-- Eyelashes (hidden by default, shown for female) -->
+                        <g id="eyelashes-group" style="display: none;">
+                            <path d="M 152 148 Q 150 145, 148 148" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 160 145 Q 160 142, 160 145" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 168 148 Q 170 145, 172 148" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 192 148 Q 190 145, 188 148" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 200 145 Q 200 142, 200 145" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M 208 148 Q 210 145, 212 148" stroke="#2C1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+                        </g>
 
                         <!-- Glasses (hidden by default) -->
-                        <g id="glasses-group" style="display: none;">
-                            <rect x="145" y="145" width="30" height="25" fill="none" stroke="#333" stroke-width="3" rx="5"/>
-                            <rect x="185" y="145" width="30" height="25" fill="none" stroke="#333" stroke-width="3" rx="5"/>
-                            <line x1="175" y1="157" x2="185" y2="157" stroke="#333" stroke-width="3"/>
-                        </g>
+                        <g id="glasses-group" style="display: none;"></g>
 
                         <!-- Nose -->
-                        <path d="M 180 165 L 175 175 L 185 175 Z" fill="#FFB380"/>
+                        <path id="nose" d="M 180 165 L 176 175 L 184 175 Z" fill="#FFB380"/>
 
                         <!-- Mouth -->
-                        <path d="M 165 185 Q 180 195, 195 185" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
+                        <path id="mouth" d="M 165 185 Q 180 195, 195 185" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
 
                         <!-- Beard (hidden by default) -->
-                        <g id="beard-group" style="display: none;">
-                            <ellipse cx="180" cy="200" rx="35" ry="20" fill="#4A2511"/>
-                        </g>
+                        <g id="beard-group" style="display: none;"></g>
                     </svg>
                     <button class="download-btn" onclick="downloadAvatar()">📥 Profil Fotoğrafını İndir</button>
                 </div>
@@ -439,7 +445,35 @@
         function setGender(gender) {
             avatarConfig.gender = gender;
             setActiveButton(event.target);
-            updateAvatar();
+            updateGender();
+        }
+
+        function updateGender() {
+            const head = document.getElementById('head');
+            const nose = document.getElementById('nose');
+            const mouth = document.getElementById('mouth');
+            const eyelashes = document.getElementById('eyelashes-group');
+            const neck = document.getElementById('neck');
+
+            if (avatarConfig.gender === 'female') {
+                // Kadın için daha küçük ve yumuşak hatlar
+                head.setAttribute('rx', '48');
+                head.setAttribute('ry', '58');
+                nose.setAttribute('d', 'M 180 168 L 177 173 L 183 173 Z');
+                mouth.setAttribute('d', 'M 168 185 Q 180 192, 192 185');
+                eyelashes.style.display = 'block';
+                neck.setAttribute('width', '26');
+                neck.setAttribute('x', '167');
+            } else {
+                // Erkek için daha büyük ve belirgin hatlar
+                head.setAttribute('rx', '50');
+                head.setAttribute('ry', '60');
+                nose.setAttribute('d', 'M 180 165 L 176 175 L 184 175 Z');
+                mouth.setAttribute('d', 'M 165 185 Q 180 195, 195 185');
+                eyelashes.style.display = 'none';
+                neck.setAttribute('width', '30');
+                neck.setAttribute('x', '165');
+            }
         }
 
         // Hair Style
@@ -458,31 +492,41 @@
 
             switch(style) {
                 case 'short':
-                    hairSVG = `<path d="M 130 140 Q 130 100, 180 100 Q 230 100, 230 140 L 230 160 Q 220 120, 180 120 Q 140 120, 130 160 Z" fill="${color}"/>`;
+                    // Kısa saç - kafanın üstünü ve yanlarını kaplar
+                    hairSVG = `
+                        <path d="M 130 140 Q 130 95, 180 95 Q 230 95, 230 140 L 230 155 Q 225 110, 180 110 Q 135 110, 130 155 Z" fill="${color}"/>
+                    `;
                     break;
                 case 'long':
+                    // Uzun saç - omuza kadar iner
                     hairSVG = `
-                        <path d="M 130 140 Q 130 100, 180 100 Q 230 100, 230 140 L 230 200 Q 220 180, 180 180 Q 140 180, 130 200 Z" fill="${color}"/>
-                        <ellipse cx="120" cy="180" rx="15" ry="30" fill="${color}"/>
-                        <ellipse cx="240" cy="180" rx="15" ry="30" fill="${color}"/>
+                        <path d="M 130 140 Q 130 95, 180 95 Q 230 95, 230 140 L 230 160 Q 225 110, 180 110 Q 135 110, 130 160 Z" fill="${color}"/>
+                        <path d="M 130 160 Q 125 190, 120 210 L 115 210 Q 120 180, 128 160 Z" fill="${color}"/>
+                        <path d="M 230 160 Q 235 190, 240 210 L 245 210 Q 240 180, 232 160 Z" fill="${color}"/>
                     `;
                     break;
                 case 'curly':
+                    // Kıvırcık saç - daireler halinde ama düzgün hizalanmış
                     hairSVG = `
-                        <circle cx="150" cy="120" r="20" fill="${color}"/>
-                        <circle cx="180" cy="110" r="22" fill="${color}"/>
-                        <circle cx="210" cy="120" r="20" fill="${color}"/>
-                        <circle cx="140" cy="140" r="18" fill="${color}"/>
-                        <circle cx="220" cy="140" r="18" fill="${color}"/>
+                        <ellipse cx="145" cy="115" rx="18" ry="20" fill="${color}"/>
+                        <ellipse cx="165" cy="105" rx="20" ry="22" fill="${color}"/>
+                        <ellipse cx="180" cy="100" rx="22" ry="24" fill="${color}"/>
+                        <ellipse cx="195" cy="105" rx="20" ry="22" fill="${color}"/>
+                        <ellipse cx="215" cy="115" rx="18" ry="20" fill="${color}"/>
+                        <ellipse cx="135" cy="135" rx="16" ry="18" fill="${color}"/>
+                        <ellipse cx="225" cy="135" rx="16" ry="18" fill="${color}"/>
                     `;
                     break;
                 case 'bald':
+                    // Kel - saç yok
                     hairSVG = '';
                     break;
                 case 'ponytail':
+                    // Topuz - arkada toplu saç
                     hairSVG = `
-                        <path d="M 130 140 Q 130 105, 180 105 Q 230 105, 230 140 L 230 160 Q 220 125, 180 125 Q 140 125, 130 160 Z" fill="${color}"/>
-                        <ellipse cx="180" cy="100" rx="20" ry="25" fill="${color}"/>
+                        <path d="M 130 140 Q 130 95, 180 95 Q 230 95, 230 140 L 230 155 Q 225 110, 180 110 Q 135 110, 130 155 Z" fill="${color}"/>
+                        <ellipse cx="180" cy="95" rx="25" ry="30" fill="${color}"/>
+                        <ellipse cx="180" cy="85" rx="18" ry="20" fill="${color}"/>
                     `;
                     break;
             }
@@ -498,6 +542,7 @@
                 setActiveButton(event.target);
             }
             updateHair();
+            updateBeard(); // Sakal rengi saç rengiyle aynı olduğu için güncelle
         }
 
         // Beard
@@ -520,20 +565,26 @@
 
                 switch(type) {
                     case 'light':
+                        // Hafif sakal - çene etrafında ince
                         beardSVG = `
-                            <path d="M 155 190 Q 180 200, 205 190 L 205 200 Q 180 210, 155 200 Z" fill="${color}" opacity="0.6"/>
+                            <path d="M 150 190 Q 150 205, 155 210 Q 165 215, 180 215 Q 195 215, 205 210 Q 210 205, 210 190"
+                                  fill="${color}" opacity="0.5" stroke="${color}" stroke-width="1"/>
                         `;
                         break;
                     case 'full':
+                        // Dolgun sakal - çene ve yanakları kaplar
                         beardSVG = `
-                            <ellipse cx="180" cy="200" rx="40" ry="25" fill="${color}"/>
-                            <rect x="140" y="180" width="80" height="30" fill="${color}" rx="10"/>
+                            <ellipse cx="180" cy="195" rx="45" ry="28" fill="${color}"/>
+                            <path d="M 135 170 Q 130 185, 135 195 L 140 190 Q 138 180, 140 170 Z" fill="${color}"/>
+                            <path d="M 225 170 Q 230 185, 225 195 L 220 190 Q 222 180, 220 170 Z" fill="${color}"/>
                         `;
                         break;
                     case 'goatee':
+                        // Keçi sakalı - sadece çene altı
                         beardSVG = `
-                            <ellipse cx="180" cy="200" rx="20" ry="18" fill="${color}"/>
-                            <rect x="170" y="195" width="20" height="20" fill="${color}" rx="5"/>
+                            <ellipse cx="180" cy="200" rx="22" ry="20" fill="${color}"/>
+                            <path d="M 165 190 Q 165 195, 170 198 Q 175 200, 180 200 Q 185 200, 190 198 Q 195 195, 195 190"
+                                  fill="${color}" stroke="${color}" stroke-width="1"/>
                         `;
                         break;
                 }
@@ -561,24 +612,35 @@
 
                 switch(type) {
                     case 'regular':
+                        // Normal gözlük - dikdörtgen camlar
                         glassesSVG = `
-                            <rect x="145" y="145" width="30" height="25" fill="none" stroke="#333" stroke-width="3" rx="5"/>
-                            <rect x="185" y="145" width="30" height="25" fill="none" stroke="#333" stroke-width="3" rx="5"/>
+                            <rect x="145" y="147" width="30" height="20" fill="none" stroke="#333" stroke-width="3" rx="3"/>
+                            <rect x="185" y="147" width="30" height="20" fill="none" stroke="#333" stroke-width="3" rx="3"/>
                             <line x1="175" y1="157" x2="185" y2="157" stroke="#333" stroke-width="3"/>
+                            <line x1="145" y1="157" x2="135" y2="155" stroke="#333" stroke-width="2"/>
+                            <line x1="215" y1="157" x2="225" y2="155" stroke="#333" stroke-width="2"/>
                         `;
                         break;
                     case 'round':
+                        // Yuvarlak gözlük
                         glassesSVG = `
-                            <circle cx="160" cy="157" r="15" fill="none" stroke="#333" stroke-width="3"/>
-                            <circle cx="200" cy="157" r="15" fill="none" stroke="#333" stroke-width="3"/>
-                            <line x1="175" y1="157" x2="185" y2="157" stroke="#333" stroke-width="3"/>
+                            <circle cx="160" cy="157" r="14" fill="none" stroke="#333" stroke-width="3"/>
+                            <circle cx="200" cy="157" r="14" fill="none" stroke="#333" stroke-width="3"/>
+                            <line x1="174" y1="157" x2="186" y2="157" stroke="#333" stroke-width="3"/>
+                            <line x1="146" y1="157" x2="136" y2="155" stroke="#333" stroke-width="2"/>
+                            <line x1="214" y1="157" x2="224" y2="155" stroke="#333" stroke-width="2"/>
                         `;
                         break;
                     case 'sunglasses':
+                        // Güneş gözlüğü - koyu camlar
                         glassesSVG = `
-                            <rect x="145" y="145" width="30" height="25" fill="#000" stroke="#000" stroke-width="3" rx="5" opacity="0.8"/>
-                            <rect x="185" y="145" width="30" height="25" fill="#000" stroke="#000" stroke-width="3" rx="5" opacity="0.8"/>
+                            <rect x="145" y="147" width="30" height="20" fill="#1a1a1a" stroke="#000" stroke-width="3" rx="3" opacity="0.9"/>
+                            <rect x="185" y="147" width="30" height="20" fill="#1a1a1a" stroke="#000" stroke-width="3" rx="3" opacity="0.9"/>
                             <line x1="175" y1="157" x2="185" y2="157" stroke="#000" stroke-width="3"/>
+                            <line x1="145" y1="157" x2="135" y2="155" stroke="#000" stroke-width="2"/>
+                            <line x1="215" y1="157" x2="225" y2="155" stroke="#000" stroke-width="2"/>
+                            <path d="M 148 150 L 172 154" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M 188 150 L 212 154" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
                         `;
                         break;
                 }
@@ -664,6 +726,7 @@
 
         // Update entire avatar
         function updateAvatar() {
+            updateGender();
             updateHair();
             updateBeard();
             updateGlasses();
