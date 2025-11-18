@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futbol Profil Fotoğrafı Özelleştirici</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .avatar-preview {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .avatar-container {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #avatar-canvas {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 100%;
+        }
+
+        .download-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .customization-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .option-group {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .option-group h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-group h3::before {
+            content: '⚽';
+            font-size: 1.2em;
+        }
+
+        .option-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .option-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .color-picker-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .color-option label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        input[type="color"] {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        input[type="color"]:hover {
+            border-color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .pattern-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .pattern-btn {
+            aspect-ratio: 1;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 0.85em;
+        }
+
+        .pattern-btn:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .pattern-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pattern-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .avatar-preview {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Futbol Profil Fotoğrafı Oluşturucu</h1>
+            <p>Kendi futbolcu avatarını özelleştir ve indir</p>
+        </div>
+
+        <div class="main-content">
+            <div class="avatar-preview">
+                <div class="avatar-container">
+                    <svg id="avatar-svg" width="360" height="360" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background -->
+                        <rect id="bg-rect" width="360" height="360" fill="#87CEEB"/>
+
+                        <!-- Jersey -->
+                        <g id="jersey-group">
+                            <defs>
+                                <pattern id="stripe-pattern-vertical" x="0" y="0" width="20" height="100%" patternUnits="userSpaceOnUse">
+                                    <rect width="10" height="100%" fill="#FF0000"/>
+                                    <rect x="10" width="10" height="100%" fill="#0000FF"/>
+                                </pattern>
+                                <pattern id="stripe-pattern-horizontal" x="0" y="0" width="100%" height="20" patternUnits="userSpaceOnUse">
+                                    <rect width="100%" height="10" fill="#FF0000"/>
+                                    <rect y="10" width="100%" height="10" fill="#0000FF"/>
+                                </pattern>
+                            </defs>
+                            <!-- Jersey body -->
+                            <path id="jersey-path" d="M 100 200 L 80 240 L 80 320 L 140 320 L 140 260 L 180 260 L 180 340 L 280 340 L 280 260 L 220 260 L 220 320 L 280 320 L 280 240 L 260 200 Z" fill="#FF0000"/>
+                            <!-- Collar -->
+                            <ellipse cx="180" cy="205" rx="25" ry="15" fill="#FFF" opacity="0.3"/>
+                        </g>
+
+                        <!-- Head -->
+                        <ellipse id="head" cx="180" cy="160" rx="50" ry="60" fill="#FFD9B3"/>
+
+                        <!-- Hair -->
+                        <g id="hair-group">
+                            <!-- Short hair default -->
+                            <path id="hair-short" d="M 130 140 Q 130 100, 180 100 Q 230 100, 230 140 L 230 160 Q 220 120, 180 120 Q 140 120, 130 160 Z" fill="#4A2511"/>
+                        </g>
+
+                        <!-- Ears -->
+                        <ellipse cx="130" cy="160" rx="8" ry="12" fill="#FFD9B3"/>
+                        <ellipse cx="230" cy="160" rx="8" ry="12" fill="#FFD9B3"/>
+
+                        <!-- Eyes -->
+                        <ellipse cx="160" cy="155" rx="8" ry="12" fill="white"/>
+                        <ellipse cx="200" cy="155" rx="8" ry="12" fill="white"/>
+                        <circle cx="160" cy="157" r="5" fill="#2C1810"/>
+                        <circle cx="200" cy="157" r="5" fill="#2C1810"/>
+
+                        <!-- Glasses (hidden by default) -->
+                        <g id="glasses-group" style="display: none;">
+                            <rect x="145" y="145" width="30" height="25" fill="none" stroke="#333" stroke-width="3" rx="5"/>
+                            <rect x="185" y="145" width="30" height="25" fill="none" stroke="#333" stroke-width="3" rx="5"/>
+                            <line x1="175" y1="157" x2="185" y2="157" stroke="#333" stroke-width="3"/>
+                        </g>
+
+                        <!-- Nose -->
+                        <path d="M 180 165 L 175 175 L 185 175 Z" fill="#FFB380"/>
+
+                        <!-- Mouth -->
+                        <path d="M 165 185 Q 180 195, 195 185" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
+
+                        <!-- Beard (hidden by default) -->
+                        <g id="beard-group" style="display: none;">
+                            <ellipse cx="180" cy="200" rx="35" ry="20" fill="#4A2511"/>
+                        </g>
+                    </svg>
+                    <button class="download-btn" onclick="downloadAvatar()">📥 Profil Fotoğrafını İndir</button>
+                </div>
+            </div>
+
+            <div class="customization-panel">
+                <!-- Gender -->
+                <div class="option-group">
+                    <h3>Cinsiyet</h3>
+                    <div class="option-buttons">
+                        <button class="option-btn active" onclick="setGender('male')">👨 Erkek</button>
+                        <button class="option-btn" onclick="setGender('female')">👩 Kadın</button>
+                    </div>
+                </div>
+
+                <!-- Hair Style -->
+                <div class="option-group">
+                    <h3>Saç Modeli</h3>
+                    <div class="option-buttons">
+                        <button class="option-btn active" onclick="setHairStyle('short')">Kısa</button>
+                        <button class="option-btn" onclick="setHairStyle('long')">Uzun</button>
+                        <button class="option-btn" onclick="setHairStyle('curly')">Kıvırcık</button>
+                        <button class="option-btn" onclick="setHairStyle('bald')">Kel</button>
+                        <button class="option-btn" onclick="setHairStyle('ponytail')">Topuz</button>
+                    </div>
+                </div>
+
+                <!-- Hair Color -->
+                <div class="option-group">
+                    <h3>Saç Rengi</h3>
+                    <div class="color-picker-group">
+                        <div class="color-option">
+                            <label>Renk Seç</label>
+                            <input type="color" id="hair-color" value="#4A2511" onchange="setHairColor(this.value)">
+                        </div>
+                        <div class="option-buttons">
+                            <button class="option-btn" onclick="setHairColor('#000000')">Siyah</button>
+                            <button class="option-btn active" onclick="setHairColor('#4A2511')">Kahve</button>
+                            <button class="option-btn" onclick="setHairColor('#F4A460')">Sarı</button>
+                            <button class="option-btn" onclick="setHairColor('#FF0000')">Kırmızı</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Beard -->
+                <div class="option-group">
+                    <h3>Sakal</h3>
+                    <div class="option-buttons">
+                        <button class="option-btn active" onclick="setBeard('none')">Yok</button>
+                        <button class="option-btn" onclick="setBeard('light')">Hafif</button>
+                        <button class="option-btn" onclick="setBeard('full')">Dolgun</button>
+                        <button class="option-btn" onclick="setBeard('goatee')">Keçi Sakalı</button>
+                    </div>
+                </div>
+
+                <!-- Glasses -->
+                <div class="option-group">
+                    <h3>Gözlük</h3>
+                    <div class="option-buttons">
+                        <button class="option-btn active" onclick="setGlasses('none')">Yok</button>
+                        <button class="option-btn" onclick="setGlasses('regular')">Normal</button>
+                        <button class="option-btn" onclick="setGlasses('round')">Yuvarlak</button>
+                        <button class="option-btn" onclick="setGlasses('sunglasses')">Güneş</button>
+                    </div>
+                </div>
+
+                <!-- Jersey Pattern -->
+                <div class="option-group">
+                    <h3>Forma Deseni</h3>
+                    <div class="pattern-options">
+                        <button class="pattern-btn active" onclick="setJerseyPattern('solid')">
+                            <div class="pattern-preview" style="background: #FF0000;"></div>
+                            Düz
+                        </button>
+                        <button class="pattern-btn" onclick="setJerseyPattern('vertical')">
+                            <div class="pattern-preview" style="background: repeating-linear-gradient(90deg, #FF0000 0px, #FF0000 5px, #0000FF 5px, #0000FF 10px);"></div>
+                            Dikey
+                        </button>
+                        <button class="pattern-btn" onclick="setJerseyPattern('horizontal')">
+                            <div class="pattern-preview" style="background: repeating-linear-gradient(0deg, #FF0000 0px, #FF0000 5px, #0000FF 5px, #0000FF 10px);"></div>
+                            Yatay
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Jersey Colors -->
+                <div class="option-group">
+                    <h3>Forma Renkleri</h3>
+                    <div class="color-picker-group">
+                        <div class="color-option">
+                            <label>Ana Renk</label>
+                            <input type="color" id="jersey-color1" value="#FF0000" onchange="setJerseyColor1(this.value)">
+                        </div>
+                        <div class="color-option">
+                            <label>İkinci Renk</label>
+                            <input type="color" id="jersey-color2" value="#0000FF" onchange="setJerseyColor2(this.value)">
+                        </div>
+                    </div>
+                    <div class="option-buttons" style="margin-top: 10px;">
+                        <button class="option-btn" onclick="setJerseyPreset('#FF0000', '#FFFF00')">🔴🟡 Kırmızı-Sarı</button>
+                        <button class="option-btn" onclick="setJerseyPreset('#0000FF', '#FFFF00')">🔵🟡 Mavi-Sarı</button>
+                        <button class="option-btn" onclick="setJerseyPreset('#000000', '#FFFFFF')">⚫⚪ Siyah-Beyaz</button>
+                        <button class="option-btn" onclick="setJerseyPreset('#00FF00', '#FFFFFF')">🟢⚪ Yeşil-Beyaz</button>
+                    </div>
+                </div>
+
+                <!-- Background Color -->
+                <div class="option-group">
+                    <h3>Arka Plan Rengi</h3>
+                    <div class="color-picker-group">
+                        <div class="color-option">
+                            <label>Renk Seç</label>
+                            <input type="color" id="bg-color" value="#87CEEB" onchange="setBackgroundColor(this.value)">
+                        </div>
+                        <div class="option-buttons">
+                            <button class="option-btn" onclick="setBackgroundColor('#87CEEB')">Mavi</button>
+                            <button class="option-btn" onclick="setBackgroundColor('#90EE90')">Yeşil</button>
+                            <button class="option-btn" onclick="setBackgroundColor('#FFB6C1')">Pembe</button>
+                            <button class="option-btn" onclick="setBackgroundColor('#DDA0DD')">Mor</button>
+                            <button class="option-btn" onclick="setBackgroundColor('#F0F0F0')">Gri</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration object to store current avatar settings
+        const avatarConfig = {
+            gender: 'male',
+            hairStyle: 'short',
+            hairColor: '#4A2511',
+            beard: 'none',
+            glasses: 'none',
+            jerseyPattern: 'solid',
+            jerseyColor1: '#FF0000',
+            jerseyColor2: '#0000FF',
+            backgroundColor: '#87CEEB'
+        };
+
+        // Gender
+        function setGender(gender) {
+            avatarConfig.gender = gender;
+            setActiveButton(event.target);
+            updateAvatar();
+        }
+
+        // Hair Style
+        function setHairStyle(style) {
+            avatarConfig.hairStyle = style;
+            setActiveButton(event.target);
+            updateHair();
+        }
+
+        function updateHair() {
+            const hairGroup = document.getElementById('hair-group');
+            const color = avatarConfig.hairColor;
+            const style = avatarConfig.hairStyle;
+
+            let hairSVG = '';
+
+            switch(style) {
+                case 'short':
+                    hairSVG = `<path d="M 130 140 Q 130 100, 180 100 Q 230 100, 230 140 L 230 160 Q 220 120, 180 120 Q 140 120, 130 160 Z" fill="${color}"/>`;
+                    break;
+                case 'long':
+                    hairSVG = `
+                        <path d="M 130 140 Q 130 100, 180 100 Q 230 100, 230 140 L 230 200 Q 220 180, 180 180 Q 140 180, 130 200 Z" fill="${color}"/>
+                        <ellipse cx="120" cy="180" rx="15" ry="30" fill="${color}"/>
+                        <ellipse cx="240" cy="180" rx="15" ry="30" fill="${color}"/>
+                    `;
+                    break;
+                case 'curly':
+                    hairSVG = `
+                        <circle cx="150" cy="120" r="20" fill="${color}"/>
+                        <circle cx="180" cy="110" r="22" fill="${color}"/>
+                        <circle cx="210" cy="120" r="20" fill="${color}"/>
+                        <circle cx="140" cy="140" r="18" fill="${color}"/>
+                        <circle cx="220" cy="140" r="18" fill="${color}"/>
+                    `;
+                    break;
+                case 'bald':
+                    hairSVG = '';
+                    break;
+                case 'ponytail':
+                    hairSVG = `
+                        <path d="M 130 140 Q 130 105, 180 105 Q 230 105, 230 140 L 230 160 Q 220 125, 180 125 Q 140 125, 130 160 Z" fill="${color}"/>
+                        <ellipse cx="180" cy="100" rx="20" ry="25" fill="${color}"/>
+                    `;
+                    break;
+            }
+
+            hairGroup.innerHTML = hairSVG;
+        }
+
+        // Hair Color
+        function setHairColor(color) {
+            avatarConfig.hairColor = color;
+            document.getElementById('hair-color').value = color;
+            if(event && event.target.classList.contains('option-btn')) {
+                setActiveButton(event.target);
+            }
+            updateHair();
+        }
+
+        // Beard
+        function setBeard(type) {
+            avatarConfig.beard = type;
+            setActiveButton(event.target);
+            updateBeard();
+        }
+
+        function updateBeard() {
+            const beardGroup = document.getElementById('beard-group');
+            const color = avatarConfig.hairColor;
+            const type = avatarConfig.beard;
+
+            if(type === 'none') {
+                beardGroup.style.display = 'none';
+            } else {
+                beardGroup.style.display = 'block';
+                let beardSVG = '';
+
+                switch(type) {
+                    case 'light':
+                        beardSVG = `
+                            <path d="M 155 190 Q 180 200, 205 190 L 205 200 Q 180 210, 155 200 Z" fill="${color}" opacity="0.6"/>
+                        `;
+                        break;
+                    case 'full':
+                        beardSVG = `
+                            <ellipse cx="180" cy="200" rx="40" ry="25" fill="${color}"/>
+                            <rect x="140" y="180" width="80" height="30" fill="${color}" rx="10"/>
+                        `;
+                        break;
+                    case 'goatee':
+                        beardSVG = `
+                            <ellipse cx="180" cy="200" rx="20" ry="18" fill="${color}"/>
+                            <rect x="170" y="195" width="20" height="20" fill="${color}" rx="5"/>
+                        `;
+                        break;
+                }
+
+                beardGroup.innerHTML = beardSVG;
+            }
+        }
+
+        // Glasses
+        function setGlasses(type) {
+            avatarConfig.glasses = type;
+            setActiveButton(event.target);
+            updateGlasses();
+        }
+
+        function updateGlasses() {
+            const glassesGroup = document.getElementById('glasses-group');
+            const type = avatarConfig.glasses;
+
+            if(type === 'none') {
+                glassesGroup.style.display = 'none';
+            } else {
+                glassesGroup.style.display = 'block';
+                let glassesSVG = '';
+
+                switch(type) {
+                    case 'regular':
+                        glassesSVG = `
+                            <rect x="145" y="145" width="30" height="25" fill="none" stroke="#333" stroke-width="3" rx="5"/>
+                            <rect x="185" y="145" width="30" height="25" fill="none" stroke="#333" stroke-width="3" rx="5"/>
+                            <line x1="175" y1="157" x2="185" y2="157" stroke="#333" stroke-width="3"/>
+                        `;
+                        break;
+                    case 'round':
+                        glassesSVG = `
+                            <circle cx="160" cy="157" r="15" fill="none" stroke="#333" stroke-width="3"/>
+                            <circle cx="200" cy="157" r="15" fill="none" stroke="#333" stroke-width="3"/>
+                            <line x1="175" y1="157" x2="185" y2="157" stroke="#333" stroke-width="3"/>
+                        `;
+                        break;
+                    case 'sunglasses':
+                        glassesSVG = `
+                            <rect x="145" y="145" width="30" height="25" fill="#000" stroke="#000" stroke-width="3" rx="5" opacity="0.8"/>
+                            <rect x="185" y="145" width="30" height="25" fill="#000" stroke="#000" stroke-width="3" rx="5" opacity="0.8"/>
+                            <line x1="175" y1="157" x2="185" y2="157" stroke="#000" stroke-width="3"/>
+                        `;
+                        break;
+                }
+
+                glassesGroup.innerHTML = glassesSVG;
+            }
+        }
+
+        // Jersey Pattern
+        function setJerseyPattern(pattern) {
+            avatarConfig.jerseyPattern = pattern;
+            setActiveButton(event.target);
+            updateJersey();
+        }
+
+        // Jersey Colors
+        function setJerseyColor1(color) {
+            avatarConfig.jerseyColor1 = color;
+            updateJersey();
+        }
+
+        function setJerseyColor2(color) {
+            avatarConfig.jerseyColor2 = color;
+            updateJersey();
+        }
+
+        function setJerseyPreset(color1, color2) {
+            avatarConfig.jerseyColor1 = color1;
+            avatarConfig.jerseyColor2 = color2;
+            document.getElementById('jersey-color1').value = color1;
+            document.getElementById('jersey-color2').value = color2;
+            setActiveButton(event.target);
+            updateJersey();
+        }
+
+        function updateJersey() {
+            const jerseyPath = document.getElementById('jersey-path');
+            const pattern = avatarConfig.jerseyPattern;
+            const color1 = avatarConfig.jerseyColor1;
+            const color2 = avatarConfig.jerseyColor2;
+
+            // Update pattern definitions
+            const verticalPattern = document.querySelector('#stripe-pattern-vertical rect:first-child');
+            const verticalPattern2 = document.querySelector('#stripe-pattern-vertical rect:last-child');
+            const horizontalPattern = document.querySelector('#stripe-pattern-horizontal rect:first-child');
+            const horizontalPattern2 = document.querySelector('#stripe-pattern-horizontal rect:last-child');
+
+            verticalPattern.setAttribute('fill', color1);
+            verticalPattern2.setAttribute('fill', color2);
+            horizontalPattern.setAttribute('fill', color1);
+            horizontalPattern2.setAttribute('fill', color2);
+
+            switch(pattern) {
+                case 'solid':
+                    jerseyPath.setAttribute('fill', color1);
+                    break;
+                case 'vertical':
+                    jerseyPath.setAttribute('fill', 'url(#stripe-pattern-vertical)');
+                    break;
+                case 'horizontal':
+                    jerseyPath.setAttribute('fill', 'url(#stripe-pattern-horizontal)');
+                    break;
+            }
+        }
+
+        // Background Color
+        function setBackgroundColor(color) {
+            avatarConfig.backgroundColor = color;
+            document.getElementById('bg-color').value = color;
+            document.getElementById('bg-rect').setAttribute('fill', color);
+            if(event && event.target.classList.contains('option-btn')) {
+                setActiveButton(event.target);
+            }
+        }
+
+        // Helper function to set active button
+        function setActiveButton(button) {
+            if(!button) return;
+            const siblings = button.parentElement.querySelectorAll('.option-btn, .pattern-btn');
+            siblings.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+        }
+
+        // Update entire avatar
+        function updateAvatar() {
+            updateHair();
+            updateBeard();
+            updateGlasses();
+            updateJersey();
+        }
+
+        // Download avatar as PNG
+        function downloadAvatar() {
+            const svg = document.getElementById('avatar-svg');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            canvas.width = 360;
+            canvas.height = 360;
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                const pngFile = canvas.toDataURL('image/png');
+                const downloadLink = document.createElement('a');
+                downloadLink.download = 'futbol-profil-fotografi.png';
+                downloadLink.href = pngFile;
+                downloadLink.click();
+            };
+
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        }
+
+        // Initialize avatar on page load
+        window.onload = function() {
+            updateAvatar();
+        };
+    </script>
+</body>
+</html>
