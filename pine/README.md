@@ -89,6 +89,18 @@ ilan eder: o bölgede yeni pozisyon açılmaz.
 
 ---
 
+## Python backtest motoru
+
+Yüzlerce parametre kombinasyonunu otomatik denemek ve walk-forward ile aşırı
+optimizasyonu ölçmek için: [`../backtest/`](../backtest/README.md)
+
+```bash
+cd ../backtest && pip install -r requirements.txt
+python ozeksi_backtest.py --demo --mode OTT --walk-forward
+```
+
+---
+
 ## TradingView'de nasıl backtest edersin
 
 1. Grafik aç → alt panelde **Pine Editor** sekmesi
