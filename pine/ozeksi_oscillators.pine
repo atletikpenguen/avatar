@@ -1,0 +1,154 @@
+//@version=6
+// =============================================================================
+//  ÖZEKŞİ OSİLATÖRLERİ — Ayrı Panel (Non-Overlay) Backtest Stratejisi
+//
+//  Modlar: OTTO (OTT Oscillator) · ROTT (Relative OTT)
+//
+//  Orijinal gösterge fikirleri : Anıl Özekşi (Matriks Trader)
+//  OTTO'nun Pine uyarlaması    : Kıvanç Özbilgiç (@KivancOzbilgic)
+//  ROTT'un Pine uyarlaması     : @zeubetella (MPL-2.0), @dg_factor katkısıyla
+//
+//  ⚠️ OTTO HAKKINDA DÜRÜSTLÜK NOTU
+//  ROTT bölümü, @zeubetella'nın yayınlanmış MPL-2.0 kaynağıyla birebir
+//  doğrulanmıştır. OTTO bölümü ise yayınlanmış AÇIKLAMADAN yeniden
+//  kurgulanmıştır (hızlı VIDYA 10 / yavaş VIDYA 25 oranı, "correction
+//  constant" ile ölçeklenir, sonuca OTT uygulanır). Kıvanç Özbilgiç'in
+//  TradingView'deki orijinal OTTO kaynağına birebir uyup uymadığı
+//  doğrulanamadı — sayısal olarak referans almadan önce
+//  tradingview.com/script/W3BqP7Nq ile karşılaştır.
+// =============================================================================
+
+strategy("Özekşi Osilatörleri — OTTO / ROTT",
+     shorttitle             = "ÖZEKŞİ OSC",
+     overlay                = false,
+     initial_capital        = 10000,
+     default_qty_type       = strategy.percent_of_equity,
+     default_qty_value      = 100,
+     commission_type        = strategy.commission.percent,
+     commission_value       = 0.05,
+     slippage               = 1,
+     process_orders_on_close = true,
+     calc_on_every_tick     = false)
+
+// ═══════════════════════════════════════════════════════════════ GİRDİLER ═══
+
+gM = "▸ 1. Mod"
+mode = input.string("OTTO", "Gösterge", options = ["OTTO", "ROTT"], group = gM)
+
+gO = "▸ 2. OTTO"
+ottoSrc     = input.source(close, "Kaynak",                              group = gO)
+ottoFast    = input.int(10,      "Hızlı VIDYA Periyodu",  minval = 1,    group = gO)
+ottoSlow    = input.int(25,      "Yavaş VIDYA Periyodu",  minval = 1,    group = gO)
+ottoCC      = input.float(100000,"Düzeltme Sabiti (Correction Constant)", group = gO,
+     tooltip = "Oranı okunabilir bir ölçeğe taşır. 1000 ile 100.000.000 arasında " +
+               "10'un katları hâlinde dene. Sinyalleri değiştirmez, sadece grafiği " +
+               "ölçekler — ama çok küçük seçersen yuvarlama hatası sinyali bozabilir.")
+ottoLength  = input.int(2,       "OTT MA Periyodu",       minval = 1,    group = gO)
+ottoPercent = input.float(1.4,   "OTT Yüzdesi (%)",       step = 0.1, minval = 0, group = gO)
+
+gR = "▸ 3. ROTT"
+rottVarLen  = input.int(1000, "VAR Periyodu", minval = 1, step = 100, group = gR,
+     tooltip = "Standart değer 1000. 100'lük adımlarla azaltıp artırılabilir.")
+rottLength  = input.int(30,   "OTT Periyodu", minval = 1, group = gR,
+     tooltip = "Standart değer 30.")
+rottPercent = input.float(7.0,"OTT Yüzdesi (%)", step = 0.1, minval = 0, group = gR,
+     tooltip = "Standart değer 7. ROTT az sinyal üretir ama isabet oranı görece yüksektir.")
+
+gS = "▸ 4. İşlem Kuralları"
+allowLong  = input.bool(true, "Long işlemler",  group = gS)
+allowShort = input.bool(true, "Short işlemler", group = gS)
+startDate  = input.time(timestamp("01 Jan 2018 00:00 +0300"), "Backtest Başlangıç", group = gS)
+endDate    = input.time(timestamp("01 Jan 2099 00:00 +0300"), "Backtest Bitiş",     group = gS)
+inWindow   = time >= startDate and time <= endDate
+
+// ═══════════════════════════════════════════════════════════════ ÇEKİRDEK ═══
+
+// VAR / VIDYA — CMO(9) ile modüle edilen uyarlanabilir ortalama
+varFunc(s, len) =>
+    up    = s > s[1] ? s - s[1] : 0.0
+    dn    = s < s[1] ? s[1] - s : 0.0
+    sumUp = math.sum(up, 9)
+    sumDn = math.sum(dn, 9)
+    cmo   = nz((sumUp - sumDn) / (sumUp + sumDn))
+    alpha = 2.0 / (len + 1)
+    seed  = ta.sma(s, len)
+    vidya = 0.0
+    vidya := len == 1 ? s :
+             na(vidya[1]) ? seed :
+             math.abs(cmo) * alpha * (s - nz(vidya[1])) + nz(vidya[1])
+    vidya
+
+// OTT — kaynağın VIDYA'sı üzerine kurulan, 2 bar kaydırılmış trailing stop
+ottFunc(s, len, pct) =>
+    ma            = varFunc(s, len)
+    fark          = ma * pct * 0.01
+    longStop      = ma - fark
+    longStopPrev  = nz(longStop[1], longStop)
+    longStop     := ma > longStopPrev ? math.max(longStop, longStopPrev) : longStop
+    shortStop     = ma + fark
+    shortStopPrev = nz(shortStop[1], shortStop)
+    shortStop    := ma < shortStopPrev ? math.min(shortStop, shortStopPrev) : shortStop
+    dir  = 1
+    dir := nz(dir[1], dir)
+    dir := dir == -1 and ma > shortStopPrev ?  1 :
+           dir ==  1 and ma < longStopPrev  ? -1 : dir
+    MT  = dir == 1 ? longStop : shortStop
+    OTT = ma > MT ? MT * (200 + pct) / 200 : MT * (200 - pct) / 200
+    out = nz(OTT[2])
+    [ma, out]
+
+// ═════════════════════════════════════════════════════ MODLARI HESAPLA ═══
+// Her iki mod da her barda koşulsuz hesaplanır: kendine referans veren
+// seriler koşullu dalda hesaplanırsa geçmişleri bozulur.
+
+// — OTTO —
+// Hızlı VIDYA'nın yavaş VIDYA'ya oranı, düzeltme sabitiyle ölçeklenir.
+// Oran 1'in üstündeyse kısa vadeli momentum uzun vadeliyi geçmiş demektir.
+ottoFastMA = varFunc(ottoSrc, ottoFast)
+ottoSlowMA = varFunc(ottoSrc, ottoSlow)
+ottoRaw    = ottoSlowMA == 0 ? 0.0 : (ottoFastMA / ottoSlowMA) * ottoCC
+[ottoSupport, ottoLine] = ottFunc(ottoRaw, ottoLength, ottoPercent)
+
+// — ROTT —
+// Uzun periyotlu (varsayılan 1000) VIDYA'nın 2 katı üzerine kurulan OTT.
+// Çok yavaş hareket eder: az ama görece güvenilir sinyal üretir.
+rottBase = 2 * varFunc(close, rottVarLen)
+[rottSupport, rottLine] = ottFunc(rottBase, rottLength, rottPercent)
+
+// ═══════════════════════════════════════════════════════ AKTİF MOD SEÇİMİ ═══
+support = mode == "OTTO" ? ottoSupport : rottSupport
+trigger = mode == "OTTO" ? ottoLine    : rottLine
+
+longEntry  = ta.crossover(support,  trigger)
+shortEntry = ta.crossunder(support, trigger)
+
+// ════════════════════════════════════════════════════════════════ EMİRLER ═══
+if inWindow
+    if longEntry and allowLong
+        strategy.entry("Long", strategy.long)
+    if shortEntry and allowShort
+        strategy.entry("Short", strategy.short)
+    if shortEntry and not allowShort
+        strategy.close("Long", comment = "Çıkış")
+    if longEntry and not allowLong
+        strategy.close("Short", comment = "Çıkış")
+
+if not inWindow and strategy.position_size != 0
+    strategy.close_all(comment = "Tarih dışı")
+
+// ════════════════════════════════════════════════════════════════ ÇİZİMLER ═══
+bull = support > trigger
+
+pS = plot(support, "Destek (VIDYA)", color = color.new(#31e7ff, 0), linewidth = 2)
+pT = plot(trigger, mode,             color = color.rgb(217, 0, 255), linewidth = 2)
+fill(pS, pT, color = bull ? color.new(color.green, 85) : color.new(color.red, 85))
+
+bgcolor(bull ? color.new(color.green, 92) : color.new(color.red, 92))
+
+plotshape(longEntry  and inWindow, "AL",  shape.triangleup,   location.bottom,
+     color.new(color.green, 0), size = size.tiny, text = "AL")
+plotshape(shortEntry and inWindow, "SAT", shape.triangledown, location.top,
+     color.new(color.red, 0),   size = size.tiny, text = "SAT")
+
+alertcondition(longEntry,  "AL",  "Yukarı kesişim — AL")
+alertcondition(shortEntry, "SAT", "Aşağı kesişim — SAT")

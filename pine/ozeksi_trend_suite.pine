@@ -1,0 +1,269 @@
+//@version=6
+// =============================================================================
+//  ÖZEKŞİ TREND SUITE — Fiyat Üstü (Overlay) Backtest Stratejisi
+//
+//  Modlar: OTT · TOTT · OTT Bands · MOST · PMax · BOOTS · HOTT/LOTT
+//
+//  Orijinal gösterge fikirleri : Anıl Özekşi (Matriks Trader)
+//  Açık kaynak Pine uyarlamaları: Kıvanç Özbilgiç (@KivancOzbilgic)
+//  OTT çekirdeği @zeubetella'nın MPL-2.0 lisanslı ROTT kaynağıyla doğrulandı.
+//
+//  Bu dosya: yukarıdaki mantıkların tek bir strategy() içinde toplanmış,
+//  backtest edilebilir hâli. Eğitim amaçlıdır, yatırım tavsiyesi değildir.
+// =============================================================================
+
+strategy("Özekşi Trend Suite — OTT/TOTT/Bands/MOST/PMax/BOOTS/HOTT-LOTT",
+     shorttitle             = "ÖZEKŞİ SUITE",
+     overlay                = true,
+     initial_capital        = 10000,
+     default_qty_type       = strategy.percent_of_equity,
+     default_qty_value      = 100,
+     commission_type        = strategy.commission.percent,
+     commission_value       = 0.05,
+     slippage               = 1,
+     process_orders_on_close = true,
+     calc_on_every_tick     = false)
+
+// ═══════════════════════════════════════════════════════════════ GİRDİLER ═══
+
+gM = "▸ 1. Mod"
+mode = input.string("OTT", "Gösterge", group = gM,
+     options = ["OTT", "TOTT", "OTT Bands", "MOST", "PMax", "BOOTS", "HOTT/LOTT"])
+
+gC = "▸ 2. Ortak Hesaplama"
+src     = input.source(close, "Kaynak",                              group = gC)
+length  = input.int(2,        "MA Periyodu",        minval = 1,      group = gC)
+percent = input.float(1.4,    "Optimizasyon Yüzdesi (%)", step = 0.1, minval = 0, group = gC)
+mav     = input.string("VAR", "MA Tipi",                            group = gC,
+     options = ["SMA","EMA","WMA","TMA","VAR","WWMA","ZLEMA","TSF","HULL"])
+useShift = input.bool(true,   "OTT çizgisini 2 bar kaydır (orijinal davranış)", group = gC,
+     tooltip = "Orijinal OTT, çizgiyi 2 bar ileri kaydırarak çizer ve sinyali OTT[2] " +
+               "ile üretir. Kapatırsan gösterge daha erken ama daha gürültülü sinyal verir.")
+
+gB = "▸ 3. TOTT / OTT Bands"
+tottCoeff = input.float(0.006, "TOTT Katsayısı",          step = 0.001, minval = 0, group = gB)
+bandUp    = input.float(0.010, "OTT Bands — Üst Katsayı", step = 0.001, minval = 0, group = gB)
+bandDn    = input.float(0.010, "OTT Bands — Alt Katsayı", step = 0.001, minval = 0, group = gB)
+
+gP = "▸ 4. PMax (ATR)"
+atrPeriod = input.int(10,    "ATR Periyodu", minval = 1,   group = gP)
+atrMult   = input.float(3.0, "ATR Çarpanı",  step   = 0.1, group = gP)
+
+gO = "▸ 5. BOOTS (Bollinger OTT Spread)"
+bbLength = input.int(2,     "Bollinger Periyodu",     minval = 1,   group = gO)
+bbMult   = input.float(2.0, "Bollinger Std Sapma",    step   = 0.1, group = gO)
+
+gH = "▸ 6. HOTT / LOTT"
+hlLength = input.int(2, "En Yüksek / En Düşük Periyodu", minval = 1, group = gH)
+
+gS = "▸ 7. İşlem Kuralları"
+allowLong  = input.bool(true,  "Long işlemler",  group = gS)
+allowShort = input.bool(true,  "Short işlemler", group = gS)
+flatZone   = input.bool(false, "Flat Zone modu (iki çizgi arasında pozisyon kapat)", group = gS,
+     tooltip = "TOTT / OTT Bands / BOOTS / HOTT-LOTT gibi çift çizgili modlarda, iki " +
+               "çizgi arasındaki 'kararsız bölge'de pozisyonsuz beklersin. Kapalıyken " +
+               "strateji her sinyalde yön çevirir (sürekli piyasadadır).")
+startDate = input.time(timestamp("01 Jan 2018 00:00 +0300"), "Backtest Başlangıç", group = gS)
+endDate   = input.time(timestamp("01 Jan 2099 00:00 +0300"), "Backtest Bitiş",     group = gS)
+inWindow  = time >= startDate and time <= endDate
+
+// ═══════════════════════════════════════ HAREKETLİ ORTALAMA FONKSİYONLARI ═══
+// NOT: Aşağıdaki fonksiyonların hepsi getMA() içinde KOŞULSUZ hesaplanır.
+// Pine'da kendine referans veren (`:=` ile geçmişini kullanan) bir seri koşullu
+// bir dalda hesaplanırsa geçmişi bozulur. Hepsini hesaplayıp sonra seçmek,
+// biraz fazladan işlem pahasına doğruluğu garantiler.
+
+// VAR / VIDYA — Chande'nin CMO'suna göre hızlanıp yavaşlayan ortalama.
+// OTT ailesinin varsayılan ortalamasıdır.
+varFunc(s, len) =>
+    up    = s > s[1] ? s - s[1] : 0.0
+    dn    = s < s[1] ? s[1] - s : 0.0
+    sumUp = math.sum(up, 9)
+    sumDn = math.sum(dn, 9)
+    cmo   = nz((sumUp - sumDn) / (sumUp + sumDn))
+    alpha = 2.0 / (len + 1)
+    seed  = ta.sma(s, len)
+    vidya = 0.0
+    vidya := len == 1 ? s :
+             na(vidya[1]) ? seed :
+             math.abs(cmo) * alpha * (s - nz(vidya[1])) + nz(vidya[1])
+    vidya
+
+// WWMA — Wilder yumuşatması
+wwmaFunc(s, len) =>
+    alpha = 1.0 / len
+    out   = 0.0
+    out  := na(out[1]) ? s : alpha * s + (1 - alpha) * nz(out[1])
+    out
+
+zlemaFunc(s, len) =>
+    lag = len % 2 == 0 ? len / 2 : (len - 1) / 2
+    ta.ema(s + (s - s[lag]), len)
+
+tsfFunc(s, len) =>
+    lrc  = ta.linreg(s, len, 0)
+    lrc1 = ta.linreg(s, len, 1)
+    lrc + (lrc - lrc1)
+
+tmaFunc(s, len) =>
+    ta.sma(ta.sma(s, math.ceil(len / 2.0)), math.floor(len / 2.0) + 1)
+
+hullFunc(s, len) =>
+    h1 = math.max(1, math.round(len / 2.0))
+    h2 = math.max(1, math.round(math.sqrt(len)))
+    ta.wma(2 * ta.wma(s, h1) - ta.wma(s, len), h2)
+
+getMA(s, len, t) =>
+    _sma   = ta.sma(s, len)
+    _ema   = ta.ema(s, len)
+    _wma   = ta.wma(s, len)
+    _tma   = tmaFunc(s, len)
+    _var   = varFunc(s, len)
+    _wwma  = wwmaFunc(s, len)
+    _zlema = zlemaFunc(s, len)
+    _tsf   = tsfFunc(s, len)
+    _hull  = hullFunc(s, len)
+    t == "SMA"   ? _sma   :
+     t == "EMA"   ? _ema   :
+     t == "WMA"   ? _wma   :
+     t == "TMA"   ? _tma   :
+     t == "WWMA"  ? _wwma  :
+     t == "ZLEMA" ? _zlema :
+     t == "TSF"   ? _tsf   :
+     t == "HULL"  ? _hull  : _var
+
+// ══════════════════════════════════════════ OTT ÇEKİRDEĞİ (TRAILING STOP) ═══
+// ma   : üzerinde çalışılacak hareketli ortalama
+// fark : stop mesafesi (yüzde tabanlı VEYA PMax'te ATR tabanlı)
+// pct  : OTT çizgisinin ek kaydırma yüzdesi
+// Dönüş: [MT = MOST çizgisi, OTT = OTT çizgisi, dir = yön (+1 / -1)]
+trailCore(ma, fark, pct) =>
+    longStop      = ma - fark
+    longStopPrev  = nz(longStop[1], longStop)
+    longStop     := ma > longStopPrev ? math.max(longStop, longStopPrev) : longStop
+
+    shortStop     = ma + fark
+    shortStopPrev = nz(shortStop[1], shortStop)
+    shortStop    := ma < shortStopPrev ? math.min(shortStop, shortStopPrev) : shortStop
+
+    dir  = 1
+    dir := nz(dir[1], dir)
+    dir := dir == -1 and ma > shortStopPrev ?  1 :
+           dir ==  1 and ma < longStopPrev  ? -1 : dir
+
+    MT  = dir == 1 ? longStop : shortStop
+    OTT = ma > MT ? MT * (200 + pct) / 200 : MT * (200 - pct) / 200
+    [MT, OTT, dir]
+
+// Bir kaynaktan doğrudan OTT çizgisi üretir (BOOTS ve HOTT/LOTT için)
+ottOf(s, len, pct, t) =>
+    ma = getMA(s, len, t)
+    [_mt, _ott, _dir] = trailCore(ma, ma * pct * 0.01, pct)
+    [_ott, _dir]
+
+// ═══════════════════════════════════════════════════ TÜM MODLARI HESAPLA ═══
+// Hepsi her barda koşulsuz hesaplanır (yukarıdaki geçmiş-bozulması notu).
+
+MAvg = getMA(src, length, mav)
+
+// — OTT / TOTT / OTT Bands / MOST —
+[mtMain, ottMain, dirMain] = trailCore(MAvg, MAvg * percent * 0.01, percent)
+
+// — PMax (sapma ATR tabanlı) —
+[mtPmax, _ottPmax, dirPmax] = trailCore(MAvg, ta.atr(atrPeriod) * atrMult, percent)
+
+// — BOOTS: OTT, kapanış yerine Bollinger bantlarına uygulanır —
+bbBasis = ta.sma(close, bbLength)
+bbDev   = bbMult * ta.stdev(close, bbLength)
+[bootsHigh, _bh] = ottOf(bbBasis + bbDev, length, percent, mav)
+[bootsLow,  _bl] = ottOf(bbBasis - bbDev, length, percent, mav)
+
+// — HOTT / LOTT: OTT, en yüksek ve en düşük fiyatlara uygulanır —
+[hottLine, _hd] = ottOf(ta.highest(high, hlLength), length, percent, mav)
+[lottLine, _ld] = ottOf(ta.lowest(low,  hlLength), length, percent, mav)
+
+// 2 bar kaydırma (orijinal OTT davranışı)
+shift(x) => useShift ? nz(x[2], x) : x
+
+ottS   = shift(ottMain)
+bootsH = shift(bootsHigh)
+bootsL = shift(bootsLow)
+hottS  = shift(hottLine)
+lottS  = shift(lottLine)
+
+// ════════════════════════════════════════════ AKTİF MOD İÇİN ÇİZGİ SEÇİMİ ═══
+// upLine : long tetikleyen çizgi   |   dnLine : short tetikleyen çizgi
+// Tek çizgili modlarda ikisi de aynıdır → strateji sürekli yön çevirir.
+
+sigSrc = mode == "BOOTS" or mode == "HOTT/LOTT" ? close : MAvg
+
+upLine = mode == "OTT"       ? ottS :
+         mode == "TOTT"      ? ottS * (1 + tottCoeff) :
+         mode == "OTT Bands" ? ottS * (1 + bandUp) :
+         mode == "MOST"      ? mtMain :
+         mode == "PMax"      ? mtPmax :
+         mode == "BOOTS"     ? bootsH : hottS
+
+dnLine = mode == "OTT"       ? ottS :
+         mode == "TOTT"      ? ottS * (1 - tottCoeff) :
+         mode == "OTT Bands" ? ottS * (1 - bandDn) :
+         mode == "MOST"      ? mtMain :
+         mode == "PMax"      ? mtPmax :
+         mode == "BOOTS"     ? bootsL : lottS
+
+twoLine = mode == "TOTT" or mode == "OTT Bands" or mode == "BOOTS" or mode == "HOTT/LOTT"
+
+// ═════════════════════════════════════════════════════════════ SİNYALLER ═══
+longEntry  = ta.crossover(sigSrc,  upLine)
+longExit   = ta.crossunder(sigSrc, upLine)
+shortEntry = ta.crossunder(sigSrc, dnLine)
+shortExit  = ta.crossover(sigSrc,  dnLine)
+
+// ════════════════════════════════════════════════════════════════ EMİRLER ═══
+if inWindow
+    if longEntry and allowLong
+        strategy.entry("Long", strategy.long)
+    if shortEntry and allowShort
+        strategy.entry("Short", strategy.short)
+
+    // Flat Zone: çift çizgili modlarda kararsız bölgeye dönünce pozisyonu kapat
+    if flatZone and twoLine
+        if longExit
+            strategy.close("Long", comment = "Flat")
+        if shortExit
+            strategy.close("Short", comment = "Flat")
+
+    // Tek yön seçiliyse, karşı sinyal pozisyonu kapatsın
+    if shortEntry and not allowShort
+        strategy.close("Long", comment = "Çıkış")
+    if longEntry and not allowLong
+        strategy.close("Short", comment = "Çıkış")
+
+if not inWindow and strategy.position_size != 0
+    strategy.close_all(comment = "Tarih dışı")
+
+// ════════════════════════════════════════════════════════════════ ÇİZİMLER ═══
+offs = useShift and mode != "MOST" and mode != "PMax" ? 2 : 0
+trendUp = sigSrc > upLine
+
+plot(MAvg, "MA", color = color.new(color.aqua, 0), linewidth = 2)
+
+pU = plot(upLine, twoLine ? "Üst Çizgi" : mode,
+     color = twoLine ? color.new(color.aqua, 0) : (trendUp ? color.green : color.red),
+     linewidth = 2, offset = offs)
+
+pD = plot(twoLine ? dnLine : na, "Alt Çizgi",
+     color = color.new(color.fuchsia, 0), linewidth = 2, offset = offs)
+
+fill(pU, pD, color = color.new(color.gray, twoLine ? 88 : 100), title = "Flat Zone")
+
+bgcolor(sigSrc > upLine ? color.new(color.green, 92) :
+         sigSrc < dnLine ? color.new(color.red, 92) : na)
+
+plotshape(longEntry  and inWindow, "AL",  shape.triangleup,   location.belowbar,
+     color.new(color.green, 0), size = size.tiny, text = "AL")
+plotshape(shortEntry and inWindow, "SAT", shape.triangledown, location.abovebar,
+     color.new(color.red, 0),   size = size.tiny, text = "SAT")
+
+alertcondition(longEntry,  "AL",  "Yukarı kesişim — AL")
+alertcondition(shortEntry, "SAT", "Aşağı kesişim — SAT")
